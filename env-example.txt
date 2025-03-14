@@ -1,0 +1,8 @@
+# Rename this file to .env.local
+
+# Database
+DATABASE_URL="mysql://user:password@localhost:3306/poker_planner"
+
+# Authentication
+JWT_SECRET="your-secret-key-here"
+

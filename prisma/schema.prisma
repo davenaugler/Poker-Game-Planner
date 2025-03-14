@@ -1,0 +1,51 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  email         String    @unique
+  password      String
+  firstName     String
+  lastName      String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  hostedGames   Game[]    @relation("HostedGames")
+  attendedGames Attendee[]
+}
+
+model Game {
+  id          String     @id @default(cuid())
+  dateTime    DateTime
+  maxPlayers  Int
+  address     String
+  city        String
+  state       String
+  zipCode     String
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  hostId      String
+  host        User       @relation("HostedGames", fields: [hostId], references: [id])
+  attendees   Attendee[]
+}
+
+model Attendee {
+  id         String   @id @default(cuid())
+  gameId     String
+  userId     String
+  game       Game     @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  waitlist   Boolean  @default(false)
+  signedUpAt DateTime @default(now())
+
+  @@unique([gameId, userId])
+}
+
