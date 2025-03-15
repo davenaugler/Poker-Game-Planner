@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useGames } from "@/contexts/game-context"
 import { useAuth } from "@/contexts/auth-context"
 import { GameCard } from "@/components/game-card"
@@ -10,10 +10,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 export default function MyGames() {
   const { games, loading, error, fetchGames } = useGames()
   const { user } = useAuth()
+  const [hasFetched, setHasFetched] = useState(false)
 
   useEffect(() => {
-    fetchGames()
-  }, [fetchGames])
+    if (user && !hasFetched) {
+      fetchGames()
+      setHasFetched(true)
+    }
+  }, [fetchGames, user, hasFetched])
 
   // Filter games where user is attending or hosting
   const myGames = games.filter((game) => game.isAttending || game.isHost)

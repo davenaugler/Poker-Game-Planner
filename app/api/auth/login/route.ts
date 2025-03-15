@@ -1,9 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { comparePasswords, setAuthCookie } from "@/lib/auth"
+import { Prisma } from "@prisma/client"
+import { ValidationError } from "joi"
+import { rateLimit } from "@/lib/rate-limit"
+
+const authLimiter = rateLimit({
+  interval: 15 * 60 * 1000, // 15 minutes
+  uniqueTokenPerInterval: 500
+});
 
 export async function POST(request: NextRequest) {
   try {
+    const identifier = request.ip ?? 'anonymous';
+    await authLimiter.check(identifier, 5); // 5 login attempts per 15 minutes
     const { email, password } = await request.json()
 
     // Find user
@@ -33,7 +43,13 @@ export async function POST(request: NextRequest) {
     })
   } catch (error) {
     console.error("Login error:", error)
-    return NextResponse.json({ error: "Failed to log in" }, { status: 500 })
+    if (error instanceof Prisma.PrismaClientKnownRequestError) {
+      return NextResponse.json({ error: "Database error occurred" }, { status: 503 })
+    }
+    if (error instanceof ValidationError) {
+      return NextResponse.json({ error: (error as ValidationError).message }, { status: 400 })
+    }
+    return NextResponse.json({ error: "An unexpected error occurred" }, { status: 500 })
   }
 }
 

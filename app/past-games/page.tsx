@@ -1,16 +1,27 @@
 "use client"
 
-import { useEffect } from "react"
+import { useEffect, useState } from "react"
 import { useGames } from "@/contexts/game-context"
+import { useAuth } from "@/contexts/auth-context"
 import { GameCard } from "@/components/game-card"
 import { Navbar } from "@/components/navbar"
 
 export default function PastGames() {
   const { pastGames, loading, error, fetchPastGames } = useGames()
+  const { user } = useAuth()
+  const [hasFetched, setHasFetched] = useState(false)
 
   useEffect(() => {
-    fetchPastGames()
-  }, [fetchPastGames])
+    if (user && !hasFetched) {
+      fetchPastGames()
+      setHasFetched(true)
+    }
+  }, [fetchPastGames, user, hasFetched])
+
+  // Filter past games to only show ones where user was involved
+  const myPastGames = pastGames.filter(
+    (game) => game.isHost || game.isAttending || game.isOnWaitlist
+  )
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -23,11 +34,13 @@ export default function PastGames() {
           <div className="text-center py-8">Loading past games...</div>
         ) : error ? (
           <div className="text-center py-8 text-destructive">{error}</div>
-        ) : pastGames.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">No past games found</div>
+        ) : myPastGames.length === 0 ? (
+          <div className="text-center py-8 text-muted-foreground">
+            You have not participated in any past games
+          </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {pastGames.map((game) => (
+            {myPastGames.map((game) => (
               <GameCard key={game.id} game={game} isPast={true} />
             ))}
           </div>

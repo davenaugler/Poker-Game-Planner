@@ -12,6 +12,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format } from "date-fns"
 import { CalendarIcon, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { Navbar } from "@/components/navbar"
 import {
   Select,
   SelectContent,
@@ -90,17 +91,21 @@ export default function CreateGame() {
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold mb-4">Please log in to create a game</h1>
-          <Button onClick={() => router.push("/login")}>Login</Button>
-        </div>
+      <div className="min-h-screen flex flex-col">
+        <Navbar />
+        <main className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold mb-4">Please log in to create a game</h1>
+            <Button onClick={() => router.push("/login")}>Login</Button>
+          </div>
+        </main>
       </div>
     )
   }
 
   return (
     <div className="min-h-screen flex flex-col">
+      <Navbar />
       <main className="flex-1 container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">Create New Game</h1>
 

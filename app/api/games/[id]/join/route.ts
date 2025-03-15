@@ -1,9 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server"
 import prisma from "@/lib/prisma"
 import { getUserFromCookie } from "@/lib/auth"
+import { z } from "zod"
+
+const joinGameSchema = z.object({
+  gameId: z.number().positive()
+});
 
 export async function POST(request: NextRequest, { params }: { params: { id: string } }) {
   try {
+    const result = joinGameSchema.safeParse({ gameId: Number(params.id) });
+    if (!result.success) {
+      return NextResponse.json({ error: "Invalid game ID" }, { status: 400 });
+    }
+
     const user = await getUserFromCookie()
 
     if (!user) {
@@ -14,7 +24,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
 
     // Check if game exists
     const game = await prisma.game.findUnique({
-      where: { id: gameId },
+      where: { id: gameId.toString() },
       include: {
         attendees: true,
       },
@@ -36,7 +46,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // Check if user is already attending
     const existingAttendee = await prisma.attendee.findFirst({
       where: {
-        gameId,
+        gameId: gameId.toString(),
         userId: user.id,
       },
     })
@@ -52,7 +62,7 @@ export async function POST(request: NextRequest, { params }: { params: { id: str
     // Create attendee record
     const attendee = await prisma.attendee.create({
       data: {
-        gameId,
+        gameId: gameId.toString(),
         userId: user.id,
         waitlist: isGameFull,
       },

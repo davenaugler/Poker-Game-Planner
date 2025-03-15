@@ -16,6 +16,7 @@ type AuthContextType = {
   register: (email: string, password: string, firstName: string, lastName: string) => Promise<void>
   logout: () => Promise<void>
   error: string | null
+  clearError: () => void
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
@@ -24,6 +25,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  const clearError = () => setError(null)
 
   useEffect(() => {
     // Check if user is logged in
@@ -112,7 +115,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, error }}>{children}</AuthContext.Provider>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, error, clearError }}>{children}</AuthContext.Provider>
   )
 }
 

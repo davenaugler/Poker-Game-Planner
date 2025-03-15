@@ -1,5 +1,6 @@
 "use client"
 
+import React from "react"
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -116,7 +117,7 @@ export function GameCard({ game, isPast = false }: GameCardProps) {
             <MapPin className="mr-2 h-4 w-4 mt-0.5 text-muted-foreground" />
             <div>
               <div>{game.address}</div>
-              <div>{game.city}, {game.state} {game.zipCode}</div>
+              <div>{game.city} {game.state} {game.zipCode}</div>
             </div>
           </div>
           <div className="flex items-center text-muted-foreground">

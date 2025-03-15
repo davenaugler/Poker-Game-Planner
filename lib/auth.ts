@@ -3,7 +3,10 @@ import { cookies } from "next/headers"
 import bcrypt from "bcryptjs"
 import prisma from "./prisma"
 
-const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
+const JWT_SECRET = process.env.JWT_SECRET
+if (!JWT_SECRET) {
+  throw new Error('JWT_SECRET environment variable is required')
+}
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, 10)
@@ -13,7 +16,7 @@ export async function comparePasswords(plainPassword: string, hashedPassword: st
   return bcrypt.compare(plainPassword, hashedPassword)
 }
 
-export async function createToken(userId: number): Promise<string> {
+export async function createToken(userId: string): Promise<string> {
   const token = await new SignJWT({ userId })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
@@ -27,12 +30,12 @@ export async function verifyToken(token: string) {
   try {
     const verified = await jwtVerify(token, new TextEncoder().encode(JWT_SECRET))
     return verified.payload
-  } catch (error) {
+  } catch {
     return null
   }
 }
 
-export async function setAuthCookie(userId: number) {
+export async function setAuthCookie(userId: string) {
   const token = await createToken(userId)
   cookies().set("auth-token", token, {
     httpOnly: true,
@@ -48,7 +51,7 @@ export async function getUserFromCookie() {
   if (!token) return null
 
   const payload = await verifyToken(token)
-  if (!payload || typeof payload.userId !== "number") return null
+  if (!payload || typeof payload.userId !== "string") return null
 
   const user = await prisma.user.findUnique({
     where: { id: payload.userId },

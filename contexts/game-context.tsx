@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, type ReactNode } from "react"
+import React, { createContext, useContext, useState, type ReactNode } from "react"
 
 type Host = {
   id: number
@@ -50,6 +50,14 @@ type GameContextType = {
     state: string
     zipCode: string
   }) => Promise<void>
+  updateGame: (gameId: string, gameData: {
+    dateTime: string
+    maxPlayers: number
+    address: string
+    city: string
+    state: string
+    zipCode: string
+  }) => Promise<void>
   joinGame: (gameId: number) => Promise<void>
   leaveGame: (gameId: number) => Promise<void>
   removeAttendee: (gameId: number, attendeeId: number) => Promise<void>
@@ -85,24 +93,25 @@ export function GameProvider({ children }: { children: ReactNode }) {
   }
 
   const fetchPastGames = async () => {
-    setLoading(true)
-    setError(null)
+    const controller = new AbortController();
+    setLoading(true);
+    setError(null);
+    
     try {
-      const res = await fetch("/api/games?past=true")
-      if (!res.ok) {
-        throw new Error("Failed to fetch past games")
-      }
-      const data = await res.json()
-      setPastGames(data)
+      const res = await fetch("/api/games?past=true", {
+        signal: controller.signal
+      });
+      if (!res.ok) throw new Error("Failed to fetch past games");
+      const data = await res.json();
+      setPastGames(data);
     } catch (error) {
-      if (error instanceof Error) {
-        setError(error.message)
-      } else {
-        setError("An unknown error occurred")
-      }
+      if ((error as Error).name === 'AbortError') return;
+      setError(error instanceof Error ? error.message : "An unknown error occurred");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
+    
+    controller.abort(); // Cleanup immediately after fetch
   }
 
   const createGame = async (gameData: {
@@ -127,6 +136,43 @@ export function GameProvider({ children }: { children: ReactNode }) {
       if (!res.ok) {
         const data = await res.json()
         throw new Error(data.error || "Failed to create game")
+      }
+
+      await fetchGames()
+    } catch (error) {
+      if (error instanceof Error) {
+        setError(error.message)
+      } else {
+        setError("An unknown error occurred")
+      }
+      throw error
+    } finally {
+      setLoading(false)
+    }
+  }
+
+  const updateGame = async (gameId: string, gameData: {
+    dateTime: string
+    maxPlayers: number
+    address: string
+    city: string
+    state: string
+    zipCode: string
+  }) => {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(`/api/games/${gameId}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(gameData),
+      })
+
+      if (!res.ok) {
+        const data = await res.json()
+        throw new Error(data.error || "Failed to update game")
       }
 
       await fetchGames()
@@ -225,6 +271,7 @@ export function GameProvider({ children }: { children: ReactNode }) {
         fetchGames,
         fetchPastGames,
         createGame,
+        updateGame,
         joinGame,
         leaveGame,
         removeAttendee,
