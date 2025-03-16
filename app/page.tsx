@@ -2,11 +2,13 @@
 
 import { useEffect, useState } from "react"
 import { useGames } from "@/contexts/game-context"
-import { GameCard } from "@/components/game-card"
-import { Navbar } from "@/components/navbar"
+import { GameCard } from "@/components/features/games/game-card"
+import { Navbar } from "@/components/features/layout/navbar"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { useAuth } from "@/contexts/auth-context"
+import { cookies } from "next/headers"
+import { redirect } from "next/navigation"
 
 export default function Home() {
   const { games, loading, error, fetchGames } = useGames()

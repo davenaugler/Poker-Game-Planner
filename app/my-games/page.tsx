@@ -1,10 +1,11 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useGames } from "@/contexts/game-context"
+import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
-import { GameCard } from "@/components/game-card"
-import { Navbar } from "@/components/navbar"
+import { useGames } from "@/contexts/game-context"
+import { GameCard } from "@/components/features/games/game-card"
+import { Navbar } from "@/components/features/layout/navbar"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 
 export default function MyGames() {

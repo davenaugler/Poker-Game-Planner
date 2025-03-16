@@ -1,18 +1,22 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
 import { useGames } from "@/contexts/game-context"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { AddressForm } from "@/components/address-form"
+import { Label } from "@/components/ui/label"
+import { AddressForm } from "@/components/features/games/address-form"
+import { useToast } from "@/components/ui/use-toast"
+import { Toaster } from "@/components/ui/toaster"
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format } from "date-fns"
 import { CalendarIcon, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { Navbar } from "@/components/navbar"
+import { Navbar } from "@/components/features/layout/navbar"
 import {
   Select,
   SelectContent,
